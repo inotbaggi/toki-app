@@ -6,13 +6,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import me.baggi.schedule.ui.ScheduleApp
+import me.baggi.schedule.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ScheduleApp()
+            AppTheme {
+                ScheduleApp()
+            }
         }
     }
 }

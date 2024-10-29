@@ -1,5 +1,7 @@
 package me.baggi.schedule
 
+import androidx.compose.material.icons.materialIcon
+import androidx.compose.material.icons.materialPath
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
@@ -70,5 +72,4 @@ object MyIcons {
         }
 
     private var _Book: ImageVector? = null
-
 }

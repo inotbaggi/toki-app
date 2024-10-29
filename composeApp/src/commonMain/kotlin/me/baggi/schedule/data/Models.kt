@@ -13,12 +13,16 @@ data class GroupDTO(val id: Long, val name: String)
 data class ScheduleDayDTO(
     val id: Long,
     val intervalId: Long,
-    val time: LocalDateTime,
+    val time: String,
     val lessons: List<LessonDTO>
 )
 
 @Serializable
-data class LessonDTO(val id: Long, val subject: String, val teacher: String)
+data class LessonDTO(
+    val lessonName: String,
+    val teachers: List<String>,
+    val cabinets: List<String>
+)
 
 @Serializable
 data class LessonTime(val id: Long, val name: String, val times: List<String>)

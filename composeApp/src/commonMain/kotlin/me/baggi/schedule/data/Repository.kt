@@ -13,6 +13,10 @@ object Repository {
         return ApiClient.get("schedule/group/$groupId")
     }
 
+    suspend fun getScheduleToday(groupId: Long): ScheduleDayDTO? {
+        return ApiClient.get("schedule/group/$groupId/today")
+    }
+
     suspend fun getLessonTimes(): List<LessonTime> {
         return ApiClient.get("schedule/times")
     }

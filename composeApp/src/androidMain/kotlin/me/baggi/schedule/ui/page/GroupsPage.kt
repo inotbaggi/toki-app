@@ -5,12 +5,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,14 +16,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.launch
 import me.baggi.schedule.data.*
 import me.baggi.schedule.ui.component.ErrorComponent
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun GroupsPage(facultyId: Long, navController: NavHostController) {
-    val userGroupId = getGroupId(LocalContext.current).collectAsState(0)
-    val state by GroupsViewModel(facultyId).dataFlow.collectAsState(0)
+fun GroupsPage(facultyId: Long, navController: NavHostController, viewModel: GroupsViewModel = viewModel()) {
+    val state by viewModel.dataFlow.collectAsState()
+
+    LaunchedEffect(facultyId) {
+        viewModel.loadData(facultyId)
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -61,15 +61,17 @@ fun GroupsPage(facultyId: Long, navController: NavHostController) {
                     CircularProgressIndicator()
                 }
             }
+
             is UiState.Success<*> -> {
                 val data = (state as UiState.Success<List<GroupDTO>>).data
                 LazyColumn {
                     items(data) {
                         GroupItem(it, navController)
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
+
             is UiState.Error -> {
                 val message = (state as UiState.Error).exception.message ?: "Unknown error"
                 ErrorComponent(message, navController)
@@ -87,10 +89,11 @@ fun GroupItem(groupDTO: GroupDTO, navController: NavHostController) {
     ) {
         Text(
             text = groupDTO.name,
+            fontWeight = FontWeight.Bold,
             fontSize = 22.sp,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(18.dp)
         )
     }
 }
