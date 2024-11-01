@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    id("com.google.gms.google-services")
     kotlin("plugin.serialization")
 }
 
@@ -39,8 +40,12 @@ kotlin {
             implementation(libs.androidx.ui.tooling.preview)
             implementation(libs.androidx.lifecycle.runtime.ktx)
             implementation(libs.androidx.navigation.compose)
-            implementation("com.github.javiersantos:AppUpdater:2.7")
+            implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+            implementation("com.google.firebase:firebase-analytics")
+            implementation("com.google.firebase:firebase-messaging")
+            implementation(libs.firebase.messaging.ktx)
             implementation("androidx.datastore:datastore-preferences:1.0.0")
+            implementation("com.google.accompanist:accompanist-permissions:0.33.1-alpha")
         }
         commonMain.dependencies {
             implementation(compose.runtime)

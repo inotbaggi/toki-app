@@ -27,3 +27,8 @@ data class LessonDTO(
 @Serializable
 data class LessonTime(val id: Long, val name: String, val times: List<String>)
 
+@Serializable
+data class AppInfo(
+    val lastVersion: String,
+    val versionChanges: List<String>
+)

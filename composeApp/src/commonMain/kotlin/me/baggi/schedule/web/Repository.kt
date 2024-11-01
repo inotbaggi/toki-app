@@ -1,4 +1,13 @@
-package me.baggi.schedule.data
+package me.baggi.schedule.web
+
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import me.baggi.schedule.data.*
 
 object Repository {
     suspend fun getFaculties(): List<FacultyDTO> {
@@ -17,7 +26,15 @@ object Repository {
         return ApiClient.get("schedule/group/$groupId/today")
     }
 
-    suspend fun getLessonTimes(): List<LessonTime> {
+    suspend fun getLessonTimes(): List<LessonTime>? {
         return ApiClient.get("schedule/times")
+    }
+
+    suspend fun getAppInfo(): AppInfo? {
+        return ApiClient.get("app/info")
+    }
+
+    suspend fun getLastApplication(): HttpResponse {
+        return ApiClient.get("app/download")
     }
 }

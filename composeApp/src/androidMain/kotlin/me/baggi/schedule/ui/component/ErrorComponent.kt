@@ -40,15 +40,15 @@ fun ErrorComponent(message: String, navController: NavController? = null) {
             fontSize = 16.sp
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Button(onClick = {
-            if (navController != null) {
+        if (navController != null) {
+            Button(onClick = {
                 val id = navController.currentDestination?.id
-                navController.popBackStack(id!!,true)
+                navController.popBackStack(id!!, true)
                 navController.navigate(id)
+            }) {
+                Text("Попробовать снова", color = Color.White)
             }
-        }) {
-            Text("Попробовать снова", color = Color.White)
         }
-        Text(text = "Ошибка (сообщи в тех поддержку при обращении): $message", color = Color.Gray)
+        /*Text(text = "Ошибка (сообщи в тех поддержку при обращении): $message", color = Color.Gray)*/
     }
 }

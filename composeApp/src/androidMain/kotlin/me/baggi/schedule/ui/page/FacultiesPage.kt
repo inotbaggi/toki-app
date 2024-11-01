@@ -9,18 +9,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import me.baggi.schedule.data.FacultiesViewModel
+import me.baggi.schedule.data.viewmodel.FacultiesViewModel
 import me.baggi.schedule.data.FacultyDTO
 import me.baggi.schedule.data.UiState
 import me.baggi.schedule.ui.component.ErrorComponent
+import me.baggi.schedule.ui.component.LoadingComponent
+import me.baggi.schedule.ui.innerPaddings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -29,6 +28,9 @@ fun FacultiesPage(navController: NavHostController, viewModel: FacultiesViewMode
     val state by viewModel.dataFlow.collectAsState(0)
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(innerPaddings),
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -49,12 +51,7 @@ fun FacultiesPage(navController: NavHostController, viewModel: FacultiesViewMode
             ) {
                 when (state) {
                     is UiState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                        LoadingComponent()
                     }
 
                     is UiState.Success<*> -> {

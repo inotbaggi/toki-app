@@ -15,9 +15,7 @@ object ApiClient {
     }
 
     suspend inline fun <reified T> get(endpoint: String): T {
-        val response = client.get("https://a865-94-131-15-75.ngrok-free.app/api/v1/$endpoint"){
-            headers["ngrok-skip-browser-warning"] = ""
-        }
+        val response = client.get("https://furina.qubixmc.net/api/v1/$endpoint")
         if (response.status.isSuccess()) return response.body()
         if (response.status.value == 404) return null as T
         throw HttpRequestException(response.status.value, response.body())

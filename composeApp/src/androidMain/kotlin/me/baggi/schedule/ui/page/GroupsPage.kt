@@ -9,16 +9,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.launch
 import me.baggi.schedule.data.*
+import me.baggi.schedule.data.viewmodel.GroupsViewModel
 import me.baggi.schedule.ui.component.ErrorComponent
+import me.baggi.schedule.ui.component.LoadingComponent
+import me.baggi.schedule.ui.innerPaddings
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -31,6 +32,7 @@ fun GroupsPage(facultyId: Long, navController: NavHostController, viewModel: Gro
 
     Column(
         modifier = Modifier.fillMaxWidth()
+            .padding(innerPaddings)
             .padding(
                 start = 16.dp,
                 end = 16.dp,
@@ -54,12 +56,7 @@ fun GroupsPage(facultyId: Long, navController: NavHostController, viewModel: Gro
 
         when (state) {
             is UiState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                LoadingComponent()
             }
 
             is UiState.Success<*> -> {

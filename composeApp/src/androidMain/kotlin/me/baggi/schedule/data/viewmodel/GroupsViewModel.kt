@@ -1,8 +1,11 @@
-package me.baggi.schedule.data
+package me.baggi.schedule.data.viewmodel
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import me.baggi.schedule.data.GroupDTO
+import me.baggi.schedule.data.UiState
+import me.baggi.schedule.web.Repository
 
 class GroupsViewModel : ViewModel(){
     private val _dataFlow = MutableStateFlow<UiState<List<GroupDTO>>>(UiState.Loading)

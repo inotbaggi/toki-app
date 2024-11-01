@@ -1,5 +1,6 @@
 package me.baggi.schedule.ui.component
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,9 +22,7 @@ data class TabBarItem(
 
 @Composable
 fun TabView(tabBarItems: List<TabBarItem>, navController: NavController) {
-    var selectedTabIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
+    var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
 
     NavigationBar {
         tabBarItems.forEachIndexed { index, tabBarItem ->
@@ -31,7 +30,7 @@ fun TabView(tabBarItems: List<TabBarItem>, navController: NavController) {
                 selected = selectedTabIndex == index,
                 onClick = {
                     selectedTabIndex = index
-                    navController.navigate(tabBarItem.title)
+                    navController.navigate(tabBarItem.page.name)
                 },
                 icon = {
                     TabBarIconView(
