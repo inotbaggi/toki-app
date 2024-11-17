@@ -1,0 +1,27 @@
+name: Build and Upload App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    name: Build APK
+    env:
+      SERVICE_API_URL: ${{ secrets.PROD_URL }}
+      VERSION: ${{ github.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+      - name: Build Android App
+        run: ./gradlew assembleRelease
+      - name: Find APK
+        run: echo "APK_PATH=$(find . -name '*.apk' | head -n 1)" >> $GITHUB_ENV
