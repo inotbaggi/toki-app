@@ -1,26 +1,28 @@
 name: Build and Upload App
-
+env:
+    SERVICE_API_URL: ${{ secrets.PROD_URL }}
+    VERSION: ${{ github.sha }}
 on:
   push:
     branches:
       - main
-
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
     name: Build APK
-    env:
-      SERVICE_API_URL: ${{ secrets.PROD_URL }}
-      VERSION: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
+          distribution: 'zulu'
+          cache: 'gradle'
           java-version: '17'
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
+      - name: Build gradle project
+        run: ./gradlew build
       - name: Build Android App
         run: ./gradlew assembleRelease
       - name: Find APK
