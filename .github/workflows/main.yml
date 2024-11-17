@@ -22,14 +22,14 @@ jobs:
           java-version: '17'
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      - name: Get Android version 
-        uses: ltDino/android-get-version-action@v1.0
+      - name: version reader
+        id: versionReader
+        uses: Devofure/version-reader-action@v1.0.1
         with:
           gradlePath: 'composeApp/build.gradle.kts'
       - name: Get the output
         run: |
-          echo "The versionCode was ${{ steps.test.outputs.versionCode }}"
-          echo "The versionName was ${{ steps.test.outputs.versionName }}"
+          echo "The versionName was ${{ steps.versionReader.outputs.versionName }}"
       - name: Create google-services.json
         env:
           DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
