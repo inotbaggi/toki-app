@@ -11,7 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
-import me.baggi.schedule.data.CacheRepository
+import me.baggi.schedule.data.DataStore
 import me.baggi.schedule.ui.ScheduleApp
 import me.baggi.schedule.ui.theme.AppTheme
 
@@ -24,16 +24,16 @@ class MainActivity : ComponentActivity() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
-                CacheRepository.metricParams["uid"] = "NOT REGISTERED"
+                DataStore.metricParams["uid"] = "NOT REGISTERED"
                 return@addOnCompleteListener
             }
 
             val token = task.result
-            CacheRepository.metricParams["uid"] = token
+            DataStore.metricParams["uid"] = token
         }
         FirebaseMessaging.getInstance().subscribeToTopic("schedule-update")
             .addOnCompleteListener { task ->
-                CacheRepository.metricParams["schedule-update-notifications"] = task.isSuccessful.toString()
+                DataStore.metricParams["schedule-update-notifications"] = task.isSuccessful.toString()
             }
         setContent {
             AppTheme {

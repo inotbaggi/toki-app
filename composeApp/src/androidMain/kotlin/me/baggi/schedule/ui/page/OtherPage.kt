@@ -74,7 +74,6 @@ fun OtherPage(navController: NavHostController) {
                         }
                     }
                 }
-
                 item {
                     Card(
                         onClick = {

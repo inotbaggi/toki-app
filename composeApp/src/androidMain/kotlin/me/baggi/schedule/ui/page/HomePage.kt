@@ -1,6 +1,5 @@
 package me.baggi.schedule.ui.page
 
-import android.Manifest
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
@@ -9,6 +8,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,23 +19,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.firebase.BuildConfig
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import me.baggi.schedule.data.*
 import me.baggi.schedule.data.viewmodel.TodaySchedulesViewModel
-import me.baggi.schedule.ui.component.ErrorComponent
-import me.baggi.schedule.ui.component.LoadingComponent
-import me.baggi.schedule.ui.component.NotifyToggleCard
-import me.baggi.schedule.ui.component.NotifyUpdateCard
+import me.baggi.schedule.ui.component.*
 import me.baggi.schedule.ui.innerPaddings
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -49,141 +50,205 @@ fun HomePage(
     navController: NavHostController,
     viewModel: TodaySchedulesViewModel = viewModel()
 ) {
+    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
     val currentDate = LocalDate.now()
+
     val dayOfWeek = currentDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
     val dayOfMonth = currentDate.dayOfMonth
-    val userGroupId = getGroupId(LocalContext.current).collectAsState(null)
     val month = currentDate.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
 
     val state by viewModel.dataFlow.collectAsState()
 
-    val selectedDay = rememberSaveable { mutableStateOf(currentDate.dayOfMonth) }
+    val configManager = remember { ConfigManager(context) }
+    val groupId by configManager.groupId.collectAsState(initial = null)
+    val isTeacherFlow = configManager.isTeacher
+    var isTeacher by remember { mutableStateOf("false") }
+    var expandedMenu by remember { mutableStateOf(false) }
+    val selectedDay = remember { mutableStateOf(currentDate.dayOfMonth) }
 
-    LaunchedEffect(userGroupId) {
-        if (userGroupId.value != null) {
-            viewModel.loadData(userGroupId.value!!)
-        }
+    LaunchedEffect(Unit) {
+        isTeacher = isTeacherFlow.first() ?: "false"
     }
 
-    Column(
+    LaunchedEffect(groupId) {
+        val userGroupId = groupId ?: return@LaunchedEffect
+        viewModel.loadData(userGroupId)
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPaddings)
+            .zIndex(999f)
+    ) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(start = 4.dp, end = 4.dp, bottom = 16.dp)
+        ) {
+            if (showNotifyCard.value) {
+                NotifyCard(
+                    "\uD83E\uDD7A Разреши уведомления",
+                    { showNotifyCard.value = false },
+                    listOf(
+                        NotifyButton(
+                            Icons.Default.Check,
+                            MaterialTheme.colorScheme.primary,
+                            { notificationPermissionState.launchPermissionRequest() },
+                        )
+                    )
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            if (showUpdateCard.value) {
+                NotifyUpdateCard({ showUpdateCard.value = false }, navController)
+            }
+        }
+
+    }
+
+    Box(
         modifier = Modifier.fillMaxWidth()
             .padding(innerPaddings)
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 36.dp
-            )
+            .padding(start = 16.dp, end = 16.dp, top = 36.dp)
     ) {
-        if (showNotifyCard.value) {
-            NotifyToggleCard(notificationPermissionState) {
-                showNotifyCard.value = false
+        Box(modifier = Modifier.align(Alignment.TopEnd).zIndex(2f)) {
+            IconButton(onClick = { expandedMenu = true }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "Показать меню")
             }
-            Spacer(Modifier.height(8.dp))
-        }
-        if (showUpdateCard.value) {
-            NotifyUpdateCard {
-                showUpdateCard.value = false
-            }
-        }
-        Text(
-            text = "Сегодня",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "$dayOfWeek, $dayOfMonth $month",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyRow{
-            items(7) {
-                val date = currentDate.plusDays(it.toLong())
-                HomeDayItem(date, date.dayOfMonth == selectedDay.value) {
-                    selectedDay.value = date.dayOfMonth
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        if (userGroupId.value == null) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-                    .fillMaxHeight()
+            DropdownMenu(
+                expanded = expandedMenu,
+                onDismissRequest = { expandedMenu = false }
             ) {
-                Text(
-                    text = "\uD83D\uDE30",
-                    textAlign = TextAlign.Center,
-                    fontSize = 48.sp
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Ой... Похоже ты не выбрал(а) свою группу",
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    fontSize = 20.sp
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Button(onClick = {
-                    navController.navigate(Page.FACULTY_LIST.name)
-                }) {
-                    Text("Перейти")
+                DropdownMenuItem(text = {
+                    Text("ℹ\uFE0F Обратная связь", fontSize = 18.sp)
+                }, onClick = {
+                    uriHandler.openUri("https://t.me/inotbaggi")
+                    expandedMenu = false
+                })
+                DropdownMenuItem(text = {
+                    Text("📖 Я ${if (isTeacher == "true") "не " else ""}преподаватель")
+                }, onClick = {
+                    runBlocking {
+                        val newValue = if (isTeacher == "true") "false" else "true"
+                        configManager.setIsTeacher(newValue)
+                        isTeacher = newValue
+                        expandedMenu = false
+                    }
+                })
+                DropdownMenuItem(text = {
+                    Text("\uD83D\uDEE0\uFE0F Dev tools", fontSize = 18.sp)
+                }, onClick = {
+                    navController.navigate("devtools")
+                    expandedMenu = false
+                })
+            }
+        }
+
+        Column(modifier = Modifier.zIndex(1f)) {
+            Row {
+                Column {
+                    Text(
+                        text = "Сегодня",
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "$dayOfWeek, $dayOfMonth $month",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
-        } else {
-            when (state) {
-                is UiState.Loading -> {
-                    LoadingComponent()
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyRow {
+                items(7) {
+                    val date = currentDate.plusDays(it.toLong())
+                    HomeDayItem(date, date.dayOfMonth == selectedDay.value) {
+                        selectedDay.value = date.dayOfMonth
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
-
-                is UiState.Success<*> -> {
-                    val data = (state as UiState.Success<ScheduleDayDTO?>).data
-                    if (data != null) {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            itemsIndexed(data.lessons) { index, lesson ->
-                                val time = CacheRepository.lessonPeriods[data.intervalId]
-                                ScheduleCardItem(time?.times?.get(index), lesson = lesson)
-                            }
-                        }
-                    } else {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth()
-                                .fillMaxHeight()
-                        ) {
-                            Text(
-                                text = "\uD83D\uDE22",
-                                textAlign = TextAlign.Center,
-                                fontSize = 48.sp
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Расписания нет!",
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Возможно стоит подождать...",
-                                textAlign = TextAlign.Center,
-                                fontSize = 16.sp
-                            )
-                        }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            if (groupId == null) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                ) {
+                    Text(
+                        text = "\uD83D\uDE30",
+                        textAlign = TextAlign.Center,
+                        fontSize = 48.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Ой... Похоже ты не выбрал(а) свою группу",
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Button(onClick = {
+                        navController.navigate(Page.FACULTY_LIST.name)
+                    }) {
+                        Text("Перейти")
                     }
                 }
+            } else {
+                when (state) {
+                    is UiState.Loading -> {
+                        LoadingComponent()
+                    }
 
-                is UiState.Error -> {
-                    val message = (state as UiState.Error).exception.message ?: "Unknown error"
-                    ErrorComponent(message, navController)
+                    is UiState.Success<*> -> {
+                        val data = (state as UiState.Success<ScheduleDayDTO?>).data
+                        if (data != null) {
+                            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                itemsIndexed(data.lessons) { index, lesson ->
+                                    val time = DataStore.lessonPeriods[data.intervalId]
+                                    ScheduleCardItem(time?.times?.get(index), lesson = lesson)
+                                }
+                            }
+                        } else {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                            ) {
+                                Text(
+                                    text = "\uD83D\uDE22",
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 48.sp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Расписания нет!",
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Возможно стоит подождать...",
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+
+                    is UiState.Error -> {
+                        val message = (state as UiState.Error).exception.message ?: "Unknown error"
+                        ErrorComponent(message, navController)
+                    }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun ScheduleCardItem(lessonTime: String?, lesson: LessonDTO) {
@@ -285,7 +350,7 @@ fun HomeDayItem(localDate: LocalDate, selected: Boolean, onClick: () -> Unit) {
                 text = dayOfWeek,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
-                color = Color(128,128,128)
+                color = Color(128, 128, 128)
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(

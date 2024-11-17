@@ -29,6 +29,7 @@ fun TabView(tabBarItems: List<TabBarItem>, navController: NavController) {
             NavigationBarItem(
                 selected = selectedTabIndex == index,
                 onClick = {
+                    if (selectedTabIndex == index) return@NavigationBarItem
                     selectedTabIndex = index
                     navController.navigate(tabBarItem.page.name)
                 },

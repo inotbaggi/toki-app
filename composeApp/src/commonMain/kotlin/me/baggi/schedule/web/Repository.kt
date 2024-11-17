@@ -1,12 +1,6 @@
 package me.baggi.schedule.web
 
-import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.core.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import me.baggi.schedule.data.*
 
 object Repository {
@@ -34,7 +28,7 @@ object Repository {
         return ApiClient.get("app/info")
     }
 
-    suspend fun getLastApplication(): HttpResponse {
+    suspend fun getLastApplication(): HttpResponse? {
         return ApiClient.get("app/download")
     }
 }
