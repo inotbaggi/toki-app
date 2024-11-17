@@ -11,7 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
-import me.baggi.schedule.data.DataStore
+import me.baggi.schedule.data.DataStorage
 import me.baggi.schedule.ui.ScheduleApp
 import me.baggi.schedule.ui.theme.AppTheme
 
@@ -24,16 +24,19 @@ class MainActivity : ComponentActivity() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
-                DataStore.metricParams["uid"] = "NOT REGISTERED"
+                DataStorage.metricParams["uid"] = "NOT REGISTERED"
                 return@addOnCompleteListener
             }
+            Log.i("FCM", "Fetching FCM registration token success")
+            Log.i("FCM", "Token: ${task.result}")
 
             val token = task.result
-            DataStore.metricParams["uid"] = token
+            DataStorage.metricParams["uid"] = token
         }
         FirebaseMessaging.getInstance().subscribeToTopic("schedule-update")
             .addOnCompleteListener { task ->
-                DataStore.metricParams["schedule-update-notifications"] = task.isSuccessful.toString()
+                Log.i("FCM", "Subscribing to topic success")
+                DataStorage.metricParams["schedule-update-notifications"] = task.isSuccessful.toString()
             }
         setContent {
             AppTheme {
