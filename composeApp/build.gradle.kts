@@ -46,12 +46,12 @@ kotlin {
             implementation(libs.firebase.messaging.ktx)
             implementation("androidx.datastore:datastore-preferences:1.0.0")
             implementation("com.google.accompanist:accompanist-permissions:0.33.1-alpha")
+            implementation ("androidx.compose.material:material-icons-extended:1.7.4")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)
-            implementation ("androidx.compose.material:material-icons-extended:1.7.4")
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
