@@ -4,9 +4,9 @@ env:
     VERSION: ${{ github.sha }}
 on:
   push:
-    branches: [ master ]
+    branches: [ master1 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master1 ]
 jobs:
   build:
     runs-on: ubuntu-latest
