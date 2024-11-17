@@ -40,3 +40,10 @@ jobs:
         run: ./gradlew assembleRelease
       - name: Find APK
         run: echo "APK_PATH=$(find . -name '*.apk' | head -n 1)" >> $GITHUB_ENV
+      - name: Upload APK
+        run: |
+          echo "Uploading APK from $APK_PATH with version ${{ steps.versionReader.outputs.versionName }}"
+          curl -X POST "$API_URL" \
+            -F "version=${{ steps.versionReader.outputs.versionName }}" \
+            -F "file=@${APK_PATH}" \
+            -H "Token: ${{ secrets.API_TOKEN }}"
