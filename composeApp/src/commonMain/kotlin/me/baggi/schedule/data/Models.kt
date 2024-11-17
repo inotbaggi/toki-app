@@ -28,6 +28,15 @@ data class LessonDTO(
 data class LessonTime(val id: Long, val name: String, val times: List<String>)
 
 @Serializable
+data class TeacherDTO(
+    val id: Long,
+    val firstName: String,
+    val lastName: String,
+    val patronymic: String,
+    val lessons: List<String> = mutableListOf()
+)
+
+@Serializable
 data class AppInfo(
     val lastVersion: String,
     val versionChanges: List<String>

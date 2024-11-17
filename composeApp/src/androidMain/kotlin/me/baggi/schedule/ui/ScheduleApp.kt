@@ -9,7 +9,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -20,9 +19,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import kotlinx.coroutines.delay
 import me.baggi.schedule.MyIcons
-import me.baggi.schedule.data.CacheRepository
+import me.baggi.schedule.data.ConfigManager
+import me.baggi.schedule.data.DataStore
 import me.baggi.schedule.web.Repository
 import me.baggi.schedule.ui.component.ErrorComponent
 import me.baggi.schedule.ui.component.LoadingComponent
@@ -37,11 +36,13 @@ lateinit var innerPaddings: PaddingValues
 @Composable
 fun ScheduleApp() {
     val navController = rememberNavController()
+    val context = LocalContext.current
+
     var error by remember { mutableStateOf<String?>(null) }
     var isLoadedMain by remember { mutableStateOf(false) }
 
-    val showNotifyCard = rememberSaveable { mutableStateOf(true) }
-    val showUpdateCard = rememberSaveable { mutableStateOf(false) }
+    val showNotifyCard = remember { mutableStateOf(true) }
+    val showUpdateCard = remember { mutableStateOf(false) }
     val notificationPermissionState = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS) { isGranted ->
         if (isGranted) {
             showNotifyCard.value = false
@@ -50,24 +51,25 @@ fun ScheduleApp() {
     if (notificationPermissionState.status.isGranted) {
         showNotifyCard.value = false
     }
-    val context = LocalContext.current
+    val configManager = remember { ConfigManager(context) }
+    val isTeacher by configManager.isTeacher.collectAsState(initial = "false")
 
     LaunchedEffect(Unit) {
         try {
-            CacheRepository.lessonPeriods = Repository.getLessonTimes()?.associateBy({it.id}, {it})
+            val start = System.currentTimeMillis()
+            DataStore.lessonPeriods = Repository.getLessonTimes()?.associateBy({ it.id }, { it })
                 ?: throw Exception("Null data")
-            CacheRepository.appInfo = Repository.getAppInfo() ?: throw Exception("Null data")
+            DataStore.appInfo = Repository.getAppInfo() ?: throw Exception("Null data")
 
             val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            if (CacheRepository.appInfo.lastVersion != pInfo.versionName) {
+            if (DataStore.appInfo.lastVersion != pInfo.versionName) {
                 showUpdateCard.value = true
             }
-
-            delay(500)
             isLoadedMain = true
             if (!notificationPermissionState.status.shouldShowRationale) {
                 notificationPermissionState.launchPermissionRequest()
             }
+            DataStore.metricParams["downloading-time-ms"] = (System.currentTimeMillis() - start).toString()
         } catch (e: Exception) {
             e.printStackTrace()
             error = e.message
@@ -77,30 +79,34 @@ fun ScheduleApp() {
         error != null -> {
             ErrorComponent(error ?: "Неизвестная ошибка...")
         }
+
         isLoadedMain -> {
-            val tabs = listOf(
-                TabBarItem(
+            val tabs = buildList {
+                add(TabBarItem(
                     page = Page.HOME,
                     title = "Главная",
                     selectedIcon = Icons.Filled.Home,
                     unselectedIcon = Icons.Outlined.Home,
                     compose = { HomePage(notificationPermissionState, showNotifyCard, showUpdateCard, navController) }
-                ),
-                TabBarItem(
+                ))
+
+                add(TabBarItem(
                     page = Page.FACULTY_LIST,
                     title = "Факультеты",
                     selectedIcon = MyIcons.book,
                     unselectedIcon = MyIcons.book,
                     compose = { FacultiesPage(navController) }
-                ),
-                TabBarItem(
-                    page = Page.OTHER,
-                    title = "Прочее",
-                    selectedIcon = Icons.Filled.Menu,
-                    unselectedIcon = Icons.Outlined.Menu,
-                    compose = { OtherPage(navController) }
-                )
-            )
+                ))
+                if (isTeacher == "true") {
+                    add(TabBarItem(
+                        page = Page.OTHER,
+                        title = "Преподавателю",
+                        selectedIcon = Icons.Filled.Person,
+                        unselectedIcon = Icons.Outlined.Person,
+                        compose = { OtherPage(navController) }
+                    ))
+                }
+            }
             Scaffold(
                 bottomBar = { TabView(tabs, navController) },
             ) { innerPadding ->
@@ -111,7 +117,6 @@ fun ScheduleApp() {
                             tab.compose()
                         }
                     }
-
                     composable("faculty/{id}", arguments = listOf(navArgument("id") {
                         type = NavType.LongType
                     })) {
@@ -125,13 +130,15 @@ fun ScheduleApp() {
                         val groupId = it.arguments?.getLong("id") ?: return@composable
                         GroupSchedulePage(groupId)
                     }
-
-                    composable("devtools") {
-                        DevPage()
+                    composable("update") {
+                        UpdatePage(context)
+                        //FileDownloadScreen()
                     }
+                    composable("devtools") { DevPage() }
                 }
             }
         }
+
         else -> {
             LoadingComponent()
         }
