@@ -3,17 +3,13 @@ package me.baggi.schedule.ui.page
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import me.baggi.schedule.data.ConfigManager
-import me.baggi.schedule.data.DataStore
+import me.baggi.schedule.data.DataStorage
 import me.baggi.schedule.ui.innerPaddings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,9 +51,9 @@ fun DevPage() {
                 Text("IsTeacher: ${isTeacherFlow}")
                 Column {
                     Text("Caching info:")
-                    Text("- LessonPeriods: ${DataStore.lessonPeriods}")
+                    Text("- LessonPeriods: ${DataStorage.lessonPeriods}")
                 }
-                DataStore.metricParams.map {
+                DataStorage.metricParams.map {
                     Text("${it.key}: ${it.value}")
                 }
             }

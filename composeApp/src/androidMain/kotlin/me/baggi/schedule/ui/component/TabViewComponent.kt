@@ -1,6 +1,5 @@
 package me.baggi.schedule.ui.component
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9,10 +8,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
-import me.baggi.schedule.ui.page.Page
+import me.baggi.schedule.ui.page.PageType
 
 data class TabBarItem(
-    val page: Page,
+    val page: PageType,
     val title: String,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
@@ -64,7 +63,6 @@ fun TabBarIconView(
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun TabBarBadgeView(count: Int? = null) {
     if (count != null) {
         Badge {

@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import me.baggi.schedule.data.viewmodel.FacultiesViewModel
+import me.baggi.schedule.ui.viewmodel.FacultiesViewModel
 import me.baggi.schedule.data.FacultyDTO
 import me.baggi.schedule.data.UiState
 import me.baggi.schedule.ui.component.ErrorComponent

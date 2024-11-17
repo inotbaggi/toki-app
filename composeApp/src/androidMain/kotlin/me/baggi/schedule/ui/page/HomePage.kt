@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,10 +29,9 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.baggi.schedule.data.*
-import me.baggi.schedule.data.viewmodel.TodaySchedulesViewModel
+import me.baggi.schedule.ui.viewmodel.TodaySchedulesViewModel
 import me.baggi.schedule.ui.component.*
 import me.baggi.schedule.ui.innerPaddings
 import java.time.LocalDate
@@ -191,7 +189,7 @@ fun HomePage(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Button(onClick = {
-                        navController.navigate(Page.FACULTY_LIST.name)
+                        navController.navigate(PageType.FACULTY_LIST.name)
                     }) {
                         Text("Перейти")
                     }
@@ -207,7 +205,7 @@ fun HomePage(
                         if (data != null) {
                             LazyColumn(modifier = Modifier.fillMaxSize()) {
                                 itemsIndexed(data.lessons) { index, lesson ->
-                                    val time = DataStore.lessonPeriods[data.intervalId]
+                                    val time = DataStorage.lessonPeriods[data.intervalId]
                                     ScheduleCardItem(time?.times?.get(index), lesson = lesson)
                                 }
                             }

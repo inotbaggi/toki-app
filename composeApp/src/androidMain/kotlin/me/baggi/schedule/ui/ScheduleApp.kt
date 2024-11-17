@@ -21,7 +21,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import me.baggi.schedule.MyIcons
 import me.baggi.schedule.data.ConfigManager
-import me.baggi.schedule.data.DataStore
+import me.baggi.schedule.data.DataStorage
 import me.baggi.schedule.web.Repository
 import me.baggi.schedule.ui.component.ErrorComponent
 import me.baggi.schedule.ui.component.LoadingComponent
@@ -57,19 +57,19 @@ fun ScheduleApp() {
     LaunchedEffect(Unit) {
         try {
             val start = System.currentTimeMillis()
-            DataStore.lessonPeriods = Repository.getLessonTimes()?.associateBy({ it.id }, { it })
+            DataStorage.lessonPeriods = Repository.getLessonTimes()?.associateBy({ it.id }, { it })
                 ?: throw Exception("Null data")
-            DataStore.appInfo = Repository.getAppInfo() ?: throw Exception("Null data")
+            DataStorage.appInfo = Repository.getAppInfo() ?: throw Exception("Null data")
 
             val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            if (DataStore.appInfo.lastVersion != pInfo.versionName) {
+            if (DataStorage.appInfo.lastVersion != pInfo.versionName) {
                 showUpdateCard.value = true
             }
             isLoadedMain = true
             if (!notificationPermissionState.status.shouldShowRationale) {
                 notificationPermissionState.launchPermissionRequest()
             }
-            DataStore.metricParams["downloading-time-ms"] = (System.currentTimeMillis() - start).toString()
+            DataStorage.metricParams["downloading-time-ms"] = (System.currentTimeMillis() - start).toString()
         } catch (e: Exception) {
             e.printStackTrace()
             error = e.message
@@ -83,7 +83,7 @@ fun ScheduleApp() {
         isLoadedMain -> {
             val tabs = buildList {
                 add(TabBarItem(
-                    page = Page.HOME,
+                    page = PageType.HOME,
                     title = "Главная",
                     selectedIcon = Icons.Filled.Home,
                     unselectedIcon = Icons.Outlined.Home,
@@ -91,7 +91,7 @@ fun ScheduleApp() {
                 ))
 
                 add(TabBarItem(
-                    page = Page.FACULTY_LIST,
+                    page = PageType.FACULTY_LIST,
                     title = "Факультеты",
                     selectedIcon = MyIcons.book,
                     unselectedIcon = MyIcons.book,
@@ -99,7 +99,7 @@ fun ScheduleApp() {
                 ))
                 if (isTeacher == "true") {
                     add(TabBarItem(
-                        page = Page.OTHER,
+                        page = PageType.OTHER,
                         title = "Преподавателю",
                         selectedIcon = Icons.Filled.Person,
                         unselectedIcon = Icons.Outlined.Person,

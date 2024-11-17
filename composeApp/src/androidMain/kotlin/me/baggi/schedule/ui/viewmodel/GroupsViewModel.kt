@@ -1,4 +1,4 @@
-package me.baggi.schedule.data.viewmodel
+package me.baggi.schedule.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

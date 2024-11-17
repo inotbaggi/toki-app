@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import me.baggi.schedule.data.*
-import me.baggi.schedule.data.viewmodel.GroupsViewModel
+import me.baggi.schedule.ui.viewmodel.GroupsViewModel
 import me.baggi.schedule.ui.component.ErrorComponent
 import me.baggi.schedule.ui.component.LoadingComponent
 import me.baggi.schedule.ui.innerPaddings
